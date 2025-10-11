@@ -4,8 +4,8 @@
 <interface/>
 <body>
 <c>*</c>
-<c>* With this sample, you can perform rounds of data acquisition continuously and obtain the profile data (including intensity and depth data).</c>
-<c>* In this sample, each round of data acquisition is triggered by the software, and the scanning of each line is triggered at a fixed rate.</c>
+<c>* With this sample, you can perform nonstop data acquisition and obtain data including the intensity image and depth map.</c>
+<c>* In this sample, after data acquisition is triggered by the software, the laser profiler scans the target object continuously at a fixed rate and returns fixed-length data.</c>
 <c>*</c>
 <c></c>
 <c>* Discover all available laser profilers and store them in the "MechEyeProfilerInfos" variable.</c>
@@ -84,11 +84,10 @@
 <l>set_framegrabber_param (AcqHandle, 'PixelFormat', 'Coord3D_C16')</l>
 <c>* Set the "AcquisitionMode" parameter to "Continuous", so that the laser profiler continuously performs rounds of data acquisition, and the sample the intensity and depth data from each round.</c>
 <l>set_framegrabber_param (AcqHandle, 'AcquisitionMode', 'Continuous')</l>
-<c>* Set the "DataAcquisitionTriggerSource" parameter to "Software", so that data acquisition is triggered by the software.</c>
-<c>* For Mech-Eye LNX-8080A: Comment out the following line.</c>
+<c>* Set the "DataAcquisitionTriggerSource" parameter to "Software" and the "TriggerMode" parameter to "Off" to enable nonstop data acquisition.</c>
+<c>* Nonstop acquisition in external trigger mode is currently not supported.</c>
 <l>set_framegrabber_param (AcqHandle, 'DataAcquisitionTriggerSource', 'Software')</l>
-<c>* The "TriggerMode" parameter controls if the selected trigger is active. </c>
-<l>set_framegrabber_param (AcqHandle, 'TriggerMode', 'On') </l>
+<l>set_framegrabber_param (AcqHandle, 'TriggerMode', 'Off') </l>
 <c>* Set the "LineScanTriggerSource" parameter to "FixedRate", so that the scan of each line is triggered at a fixed rate.</c>
 <c>* The fixed rate is set through the "AcquisitionLineRate" parameter.</c>
 <l>set_framegrabber_param (AcqHandle, 'LineScanTriggerSource', 'FixedRate')</l>
@@ -105,24 +104,8 @@
 <c>* Attention: "grab_image_start()" must be called before "grab_data_async()" to start the data acquisition. </c>
 <c>* Attention: HALCON discourages the use of "set_framegrabber_param (AcqHandle, 'AcquisitionStart', 1)", as this parameter is handled internally by HALCON.</c>
 <l>grab_image_start(AcqHandle, -1) </l>
-<c>* Use a for loop to obtain the data from two rounds of data acquisition by the laser profiler and process the data.</c>
-<l>for Index :=1 to 2 by 1 </l>
-<c>    * Set the "TriggerSoftware" parameter to "1" to trigger a single round of data acquisition.</c>
-<c>    * If the processing of "grab_image_start()" has not fully completed, the "TriggerSoftware" parameter may be locked.</c>
-<c>    * Therefore, a for loop with wait is used to make up to 5 attempts at setting the parameter value.</c>
-<l>    for Count :=1 to 5 by 1 </l>
-<l>        wait_seconds(2)</l>
-<l>        try</l>
-<l>            set_framegrabber_param (AcqHandle, 'TriggerSoftware', 1)</l>
-<l>            break</l>
-<l>        catch (Exception)</l>
-<l>            continue</l>
-<l>        endtry </l>
-<l>    endfor   </l>
-<c>    * Stop execution if all 5 attempts failed.</c>
-<l>    if (Count == 5)</l>
-<l>        stop()</l>
-<l>    endif </l>
+<l>while(1)</l>
+<c></c>
 <c>    * Asynchronously obtain the data from the laser profiler and store it to the provided variables.</c>
 <l>    grab_data_async(Image, Region, Contours, AcqHandle, -1, ObjectModel3D)    </l>
 <c>    * Select the "Reflectance" component (intensity data) from the acquired data and store it to the variable "reflectance". </c>
@@ -144,7 +127,7 @@
 <l>    scale_image(depthValid, depthInMM, scaleZ, offsetZ)</l>
 <c>    * Clear the 3D object model stored in the variable "ObjectModel3D", preparing it for further processing or storage of new data. </c>
 <l>    clear_object_model_3d (ObjectModel3D)</l>
-<l>endfor</l>
+<l>endwhile</l>
 <c></c>
 <c>* Close the frame grabber.</c>
 <l>close_framegrabber (AcqHandle)</l>
